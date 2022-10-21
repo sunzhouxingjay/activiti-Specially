@@ -1,0 +1,7 @@
+github:
+  organisations:
+  - name: activiti
+    repositories:
+    - name: activiti-dependencies
+      branch: 7.0.x
+      useSinglePullRequest: true
