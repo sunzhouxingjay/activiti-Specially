@@ -46,12 +46,19 @@ public abstract class EventSubscriptionEntityImpl extends AbstractEntity impleme
     return oid;
   }
 
+
+  public void setOid(String oid) {
+    this.oid = oid;
+  }
+
+
   public EventSubscriptionEntityImpl() {
     this.created = Context.getProcessEngineConfiguration().getClock().getCurrentTime();
     //自己加的
     this.oid=Context.getCommandContext().getOid();
   }
 
+  
   public Object getPersistentState() {
     HashMap<String, Object> persistentState = new HashMap<String, Object>();
     persistentState.put("executionId", executionId);

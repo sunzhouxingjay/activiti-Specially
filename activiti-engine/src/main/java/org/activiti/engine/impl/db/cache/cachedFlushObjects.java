@@ -78,7 +78,6 @@ public class cachedFlushObjects {
         //         deletedList.add(cachedDelete.remove(Oid));
         //     }
         // }
-
         for (String Oid:Oids) {
             //加入
             //需要价格判定，不判定，Oid不存在会加入空的hashMap
@@ -86,7 +85,6 @@ public class cachedFlushObjects {
             updatedObjects.addAll(cachedUpdate.remove(Oid));
             deletedList.add(cachedDelete.remove(Oid));
         }
-
         useRedis.insertListToRedis(insertedList);
         useRedis.updateToRedis(updatedObjects);
         useRedis.deleteListToRedis(deletedList);
@@ -139,7 +137,7 @@ public class cachedFlushObjects {
         cachedResponse response=new cachedResponse();
         response.setOid(Oid);
         response.setBusinessData(businessData);
-        if (insertedObjects.isEmpty()&&updatedObjects.isEmpty()&&updatedObjects.isEmpty()) {
+        if (insertedObjects.isEmpty()&&updatedObjects.isEmpty()&&deletedObjects.isEmpty()) {
             logger.info("this operation has no data to change");
             System.out.println("no entity to update");
             //return;//均为空，没有需要插入或者删除的实体

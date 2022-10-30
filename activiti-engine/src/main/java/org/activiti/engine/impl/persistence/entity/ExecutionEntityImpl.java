@@ -46,6 +46,8 @@ public class ExecutionEntityImpl extends VariableScopeImpl implements ExecutionE
 
   private static final long serialVersionUID = 1L;
 
+  protected String oid;
+
   // current position /////////////////////////////////////////////////////////
   protected transient FlowElement currentFlowElement; 
   protected transient ActivitiListener currentActivitiListener; // Only set when executing an execution listener
@@ -192,6 +194,7 @@ public class ExecutionEntityImpl extends VariableScopeImpl implements ExecutionE
   protected String superExecutionId;
   
   protected String rootProcessInstanceId;
+
   protected transient ExecutionEntityImpl rootProcessInstance;
 
   protected transient boolean forcedUpdate;
@@ -202,9 +205,20 @@ public class ExecutionEntityImpl extends VariableScopeImpl implements ExecutionE
 
   protected String parentProcessInstanceId;
 
+  
+
   public ExecutionEntityImpl() { 
-    
+    this.oid=Context.getCommandContext().getOid();
   }
+
+  public String getOid() {
+    return oid;
+  }
+
+  public void setOid(String oid) {
+    this.oid = oid;
+  }
+
   
   /**
    * Static factory method: to be used when a new execution is created for the very first time/

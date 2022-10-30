@@ -637,12 +637,15 @@ public class DbSqlSession implements Session {
         T entity = null;
 
         Class<? extends Entity> clazz=entityClass.asSubclass(Entity.class);
+
+
         //System.out.println("selectById:"+clazz.toString()+"-"+id);
         entity=(T)findByIdInRedis(clazz.toString(), id);
+        //findByIdInRedis调用了cacheorload,所以下面存内存应该可以省略
         if (entity!=null) {
             //System.out.println("RedisGet:"+clazz.toString()+"-"+id);
-            entityCache.put(entity,
-                        true); 
+            // entityCache.put(entity,
+            //             true);
             return entity;
         }
         //System.out.println("selectById:"+clazz.toString()+"-"+id);

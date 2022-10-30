@@ -14,11 +14,11 @@ import org.slf4j.LoggerFactory;
  */
 public class oidEvents {
     private static Logger logger=LoggerFactory.getLogger(oidEvents.class);
-    private volatile static ConcurrentHashMap<String,Map<String,String>> oidEventMap=new ConcurrentHashMap<>();
+    private volatile static ConcurrentHashMap<String,ConcurrentHashMap<String,String>> oidEventMap=new ConcurrentHashMap<>();
     
     public static void addOidEventMap(String oid,String eventName,String executionId) {
         if (!oidEventMap.containsKey(oid)) {
-            oidEventMap.put(oid,new HashMap<String,String>());
+            oidEventMap.put(oid,new ConcurrentHashMap<String,String>());
         }
         oidEventMap.get(oid).put(eventName,executionId);
     }
@@ -35,17 +35,17 @@ public class oidEvents {
         }
     }
 
-    public static ConcurrentHashMap<String,Map<String,String>> getAllEventMap() {
+    public static ConcurrentHashMap<String,ConcurrentHashMap<String,String>> getAllEventMap() {
         return oidEventMap;
     }
 
-    public static Map<String,String> getEventMapByOid(String oid) {
-        if (oidEventMap.containsKey(oid)) {
-            return oidEventMap.get(oid);
-        } else {
-            return new HashMap<>();
-        }
-    }
+    // public static Map<String,String> getEventMapByOid(String oid) {
+    //     if (oidEventMap.containsKey(oid)) {
+    //         return oidEventMap.get(oid);
+    //     } else {
+    //         return new HashMap<>();
+    //     }
+    // }
 
     public static String getEventExecutionIdByOidAndName(String oid,String eventName) {
         return oidEventMap.get(oid).get(eventName);

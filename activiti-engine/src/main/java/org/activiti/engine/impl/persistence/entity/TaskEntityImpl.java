@@ -47,6 +47,7 @@ public class TaskEntityImpl extends VariableScopeImpl implements TaskEntity, Ser
 
   private static final long serialVersionUID = 1L;
 
+  protected String oid;
   protected String owner;
   protected transient int assigneeUpdatedCount; // needed for v5 compatibility
   protected transient String originalAssignee; // needed for v5 compatibility
@@ -93,8 +94,17 @@ public class TaskEntityImpl extends VariableScopeImpl implements TaskEntity, Ser
   protected Date claimTime;
 
   public TaskEntityImpl() {
-    
+    this.oid=Context.getCommandContext().getOid();
   }
+
+  public String getOid() {
+    return oid;
+  }
+
+  public void setOid(String oid) {
+    this.oid = oid;
+  }
+
 
   public Object getPersistentState() {
     Map<String, Object> persistentState = new HashMap<String, Object>();

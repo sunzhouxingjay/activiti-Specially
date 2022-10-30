@@ -116,6 +116,16 @@ public class workflowResponse implements Serializable{
         return stringBuilder.toString();
     }
 
+    public String getSimpleViewString() {
+        StringBuilder stringBuilder=new StringBuilder();
+        stringBuilder.append("fromTaskName:").append(fromTaskName.toString()).append("$$")
+                     .append("toTaskName:").append(toTaskName.toString()).append("$$")
+                     .append("isDeploy:").append(String.valueOf(isDeploy)).append("$$")
+                     .append("deploymentName:").append(deploymentName).append("$$")
+                     .append("businessData:").append(businessData);
+        return stringBuilder.toString();
+    }
+
     public String getViewEncodeString() {
         String str=getViewString();
         return useRedis.entityToStream(str);
