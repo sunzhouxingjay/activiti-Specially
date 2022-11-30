@@ -445,9 +445,15 @@ public class DbSqlSession implements Session {
                 return findEventSubScrptionsByNameAndExecutionId(params.get("eventType"), params.get("eventName"), params.get("executionId"));
             } else if (statement.equals("selectEventSubscriptionsByExecution")) {
                 return findEventSubScrptionsByExecution(String.valueOf(para));
+            } else if (statement.equals("selectEventSubscriptionsByProcessInstanceTypeAndActivity")) {
+                Map<String,String> params=(HashMap<String,String>)(para);
+                return findEventSubScriptionsByProcessInstanceTypeAndActivityId(params.get("eventType"), params.get("processInstanceId"), params.get("activityId"));
+            } else if (statement.equals("selectInactiveExecutionsInActivityAndProcessInstance")) {
+                Map<String,String> params=(HashMap<String,String>)(para);
+                return findInactiveExecutionsInActivityAndProcessInstanceId(params.get("activityId"),params.get("processInstanceId"));
             }
         }
-        //System.out.println("statement:"+statement+String.valueOf(para));
+        System.out.println("statement:"+statement+String.valueOf(para));
         statement = dbSqlSessionFactory.mapStatement(statement);
         if (firstResult == -1 || maxResults == -1) {
             return Collections.EMPTY_LIST;
@@ -485,6 +491,11 @@ public class DbSqlSession implements Session {
     }
 
     @SuppressWarnings("rawtypes")
+    public List findEventSubScriptionsByProcessInstanceTypeAndActivityId(String eventType,String processInstanceId,String activityId) {
+        return cacheLoadOrStore(useRedis.findEventSubScriptionEntityByProcessInstanceTypeAndActivity(eventType, processInstanceId, activityId));
+    }
+
+    @SuppressWarnings("rawtypes")
     public List findEventSubScrptionsByExecution(String executionId) {
         return cacheLoadOrStore(useRedis.findEventSubScriptionEntityByExecution(executionId));
     }
@@ -512,6 +523,11 @@ public class DbSqlSession implements Session {
     @SuppressWarnings("rawtypes")
     public List findTasksByExecutionId(String executionId) {
         return cacheLoadOrStore(useRedis.findTasksByExecutionId(executionId));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public List findInactiveExecutionsInActivityAndProcessInstanceId(String activityId,String processInstanceId) {
+        return cacheLoadOrStore(useRedis.findInactiveExecutionsInActivityAndProcessInstance(activityId, processInstanceId));
     }
 
     @SuppressWarnings("rawtypes")
@@ -615,7 +631,7 @@ public class DbSqlSession implements Session {
         statement = dbSqlSessionFactory.mapStatement(statement);
         Object result = sqlSession.selectOne(statement,
                                              parameter);
-        //System.out.println("selectOne:"+statement);
+        System.out.println("selectOne:"+statement);
         if (result instanceof Entity) {
             Entity loadedObject = (Entity) result;
             result = cacheLoadOrStore(loadedObject);
@@ -648,7 +664,7 @@ public class DbSqlSession implements Session {
             //             true);
             return entity;
         }
-        //System.out.println("selectById:"+clazz.toString()+"-"+id);
+        System.out.println("selectById:"+clazz.toString()+"-"+id);
         if (useCache) {
             entity = entityCache.findInCache(entityClass,
                                              id);
@@ -722,8 +738,8 @@ public class DbSqlSession implements Session {
 
         if (commandContext.isSegmentedExecution()) {
             String Oid=commandContext.getOid();
-            String businessData=commandContext.getBusinessData();
-            cachedFlushObjects.storeDataToCache(insertedObjects, updatedObjects, deletedObjects, Oid,businessData);
+            String serviceResponse=commandContext.getLastResponse();
+            cachedFlushObjects.storeDataToCache(insertedObjects, updatedObjects, deletedObjects, Oid,serviceResponse);
         } else {
             useRedis.insertToRedis(insertedObjects);
             useRedis.updateToRedis(updatedObjects);

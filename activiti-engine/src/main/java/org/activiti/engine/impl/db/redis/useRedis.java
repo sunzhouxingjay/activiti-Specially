@@ -22,15 +22,21 @@ import org.activiti.engine.impl.db.cache.oidEvents;
 import org.activiti.engine.impl.db.redisEntity.typeTransfer;
 import org.activiti.engine.impl.interceptor.CommandContext;
 import org.activiti.engine.impl.persistence.entity.DeploymentEntity;
+import org.activiti.engine.impl.persistence.entity.DeploymentEntityImpl;
 import org.activiti.engine.impl.persistence.entity.Entity;
 import org.activiti.engine.impl.persistence.entity.EventSubscriptionEntity;
 import org.activiti.engine.impl.persistence.entity.EventSubscriptionEntityImpl;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
+import org.activiti.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntityImpl;
 import org.activiti.engine.impl.persistence.entity.PropertyEntityImpl;
 import org.activiti.engine.impl.persistence.entity.ResourceEntity;
+import org.activiti.engine.impl.persistence.entity.ResourceEntityImpl;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
+import org.activiti.engine.impl.persistence.entity.TaskEntityImpl;
 import org.activiti.engine.impl.persistence.entity.VariableInstanceEntity;
+import org.activiti.engine.impl.persistence.entity.VariableInstanceEntityImpl;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 @Component
@@ -42,7 +48,7 @@ public  class useRedis {
     public final static String DeploymentClass="class org.activiti.engine.impl.persistence.entity.DeploymentEntityImpl";
     public final static String ResourceClass="class org.activiti.engine.impl.persistence.entity.ResourceEntityImpl";
     public final static String PropertyClass="class org.activiti.engine.impl.persistence.entity.PropertyEntityImpl";
-    public final static String EventClass="class org.activiti.engine.impl.persistence.entity.MessageEventSubscriptionEntityImpl";
+    public final static String EventClass="class org.activiti.engine.impl.persistence.entity.EventSubscriptionEntityImpl";
     public final static Set<String> listfieldMap=new HashSet<>(Arrays.asList("selectTasksByExecutionId",
                                                                         "selectTasksByParentTaskId",
                                                                         "selectVariablesByTaskId",
@@ -51,7 +57,9 @@ public  class useRedis {
                                                                         "selectExecutionsByParentExecutionId",
                                                                         "selectResourcesByDeploymentId",
                                                                         "selectEventSubscriptionsByNameAndExecution",
-                                                                        "selectEventSubscriptionsByExecution"));
+                                                                        "selectEventSubscriptionsByExecution",
+                                                                        "selectEventSubscriptionsByProcessInstanceTypeAndActivity",
+                                                                        "selectInactiveExecutionsInActivityAndProcessInstance"));
     
     static public StringRedisTemplate stringRedisTemplate=new redisUtil().getstringRedisTemplate();
     private static final ThreadLocal<Map<String,String>> threadLocalCache=new ThreadLocal<Map<String,String>>();
@@ -133,12 +141,15 @@ public  class useRedis {
             }
             //这里可能要改用stringbuilder，防止频繁创建新对象，造成内存抖动
             for (Class<? extends Entity> clazz:insertedObjects.keySet()) {
+                //System.out.println("4");
                 StringBuilder stringBuilder=new StringBuilder();
                 stringBuilder.append(typeTransfer.getSimpleType.get(clazz.toString())).append('-');
                 int prefixLength=stringBuilder.length();
                 //String prefix=typeTransfer.getSimpleType.get(clazz.toString())+"-";
                 Map<String,Entity> entityMap=insertedObjects.get(clazz);
+                //System.out.println("5");
                 handleEntitiesFieldMap(clazz.toString(),entityMap.values());
+                //System.out.println("6");
                 for (String entityId:entityMap.keySet()) {
                     stringBuilder.append(entityId);
                     //String key=prefix+entityId;
@@ -336,91 +347,147 @@ public  class useRedis {
 
     //处理deleteObjects删除时的关键字段映射，返回需要的删除的key的list
     public static void removeDeleteObjectsFieldMap(Class<? extends Entity> clazz,Collection<Entity> entities) {
-        switch (clazz.toString()) {
-            case TaskClass:
-                removeTaskEntitiesFieldMap(entities);
-                break;
-            case VariableClass:
-                removeVariableInstanceEntitiesFieldMap(entities);
-                break;
-            case ExecutionClass:
-                removeExecutionEntitiesFieldMap(entities);
-                break;
-            case ProcessDefinitionClass:
-                removeProcessDefinitionEntitiesFieldMap(entities);
-                break;
-            case DeploymentClass:
-                removeDeploymentEntitiesFieldMap(entities);
-                break;
-            case ResourceClass:
-                removeResourceEntitiesFieldMap(entities);
-                break;
-            case EventClass:
-                removeEventSubSrcEntitiesFieldMap(entities);
-                break; 
-            default:
-                return;
+        if (entities.isEmpty()) return;
+        Entity entity=entities.iterator().next();
+        if (entity instanceof TaskEntityImpl) {
+            removeTaskEntitiesFieldMap(entities);
+        } else if (entity instanceof VariableInstanceEntityImpl) {
+            removeVariableInstanceEntitiesFieldMap(entities);
+        } else if (entity instanceof ExecutionEntityImpl) {
+            removeExecutionEntitiesFieldMap(entities);
+        } else if (entity instanceof ProcessDefinitionEntityImpl) {
+            removeProcessDefinitionEntitiesFieldMap(entities);
+        } else if (entity instanceof DeploymentEntityImpl) {
+            removeDeploymentEntitiesFieldMap(entities);
+        } else if (entity instanceof ResourceEntityImpl) {
+            removeResourceEntitiesFieldMap(entities);
+        } else if (entity instanceof EventSubscriptionEntityImpl) {
+            removeEventSubSrcEntitiesFieldMap(entities);
         }
+        // switch (clazz.toString()) {
+        //     case TaskClass:
+        //         removeTaskEntitiesFieldMap(entities);
+        //         break;
+        //     case VariableClass:
+        //         removeVariableInstanceEntitiesFieldMap(entities);
+        //         break;
+        //     case ExecutionClass:
+        //         removeExecutionEntitiesFieldMap(entities);
+        //         break;
+        //     case ProcessDefinitionClass:
+        //         removeProcessDefinitionEntitiesFieldMap(entities);
+        //         break;
+        //     case DeploymentClass:
+        //         removeDeploymentEntitiesFieldMap(entities);
+        //         break;
+        //     case ResourceClass:
+        //         removeResourceEntitiesFieldMap(entities);
+        //         break;
+        //     case EventClass:
+        //         removeEventSubSrcEntitiesFieldMap(entities);
+        //         break; 
+        //     default:
+        //         return;
+        // }
     }
     //处理entity关键字段的映射，这样可以用deploymentId查找ResourceEntity
     public static void handleEntitiesFieldMap(String clazz,Collection<Entity> entities) {
         if (entities.isEmpty()) {
             return;
         }
-        switch (clazz) {
-            case TaskClass:
+        System.out.println("7");
+        Entity entity=entities.iterator().next();
+        if (entity instanceof TaskEntityImpl) {
+            //System.out.println("8");
             handleTaskEntitiesFieldMap(entities);
-            break;
-            case VariableClass:
+        } else if (entity instanceof VariableInstanceEntityImpl) {
+            //System.out.println("9");
             handleVariableInstanceEntitiesFieldMap(entities);
-            break;
-            case ExecutionClass:
+        } else if (entity instanceof ExecutionEntityImpl) {
+            //System.out.println("10");
             handleExecutionEntitiesFieldMap(entities);
-            break;
-            case ProcessDefinitionClass:
+        } else if (entity instanceof ProcessDefinitionEntityImpl) {
+            //System.out.println("11");
             handleProcessDefinitionEntitiesFieldMap(entities);
-            break;
-            case DeploymentClass:
+        } else if (entity instanceof DeploymentEntityImpl) {
+            //System.out.println("12");
             handleDeploymentEntitiesFieldMap(entities);
-            break;
-            case ResourceClass:
+        } else if (entity instanceof ResourceEntityImpl) {
+            //System.out.println("13");
             handleResourceEntitiesFieldMap(entities);
-            break;
-            case EventClass:
+        } else if (entity instanceof EventSubscriptionEntityImpl) {
+            //System.out.println("14");
             handleEventSubSrcEntitiesFieldMap(entities);
-            break;
-            default:
-            return;
         }
+        // switch (clazz) {
+        //     case TaskClass:
+        //     handleTaskEntitiesFieldMap(entities);
+        //     break;
+        //     case VariableClass:
+        //     handleVariableInstanceEntitiesFieldMap(entities);
+        //     break;
+        //     case ExecutionClass:
+        //     handleExecutionEntitiesFieldMap(entities);
+        //     break;
+        //     case ProcessDefinitionClass:
+        //     handleProcessDefinitionEntitiesFieldMap(entities);
+        //     break;
+        //     case DeploymentClass:
+        //     handleDeploymentEntitiesFieldMap(entities);
+        //     break;
+        //     case ResourceClass:
+        //     handleResourceEntitiesFieldMap(entities);
+        //     break;
+        //     case EventClass:
+        //     handleEventSubSrcEntitiesFieldMap(entities);
+        //     break;
+        //     default:
+        //     return;
+        // }
     }
 
     public static void handleEntityFieldMap(Entity entity) {
-        Class<? extends Entity> clazz=entity.getClass();
-        switch (clazz.toString()) {
-            case TaskClass:
+        //Class<? extends Entity> clazz=entity.getClass();
+        if (entity instanceof TaskEntityImpl) {
             handleTaskEntityFieldMap(entity);
-            break;
-            case VariableClass:
+        } else if (entity instanceof VariableInstanceEntityImpl) {
             handleVariableInstanceEntityFieldMap(entity);
-            break;
-            case ExecutionClass:
+        } else if (entity instanceof ExecutionEntityImpl) {
             handleExecutionEntityFieldMap(entity);
-            break;
-            case ProcessDefinitionClass:
+        } else if (entity instanceof ProcessDefinitionEntityImpl) {
             handleProcessDefinitionEntityFieldMap(entity);
-            break;
-            case DeploymentClass:
+        } else if (entity instanceof DeploymentEntityImpl) {
             handleDeploymentEntityFieldMap(entity);
-            break;
-            case ResourceClass:
+        } else if (entity instanceof ResourceEntityImpl) {
             handleResourceEntityFieldMap(entity);
-            break;
-            case EventClass:
+        } else if (entity instanceof EventSubscriptionEntityImpl) {
             handleEventSubSrcEntityFieldMap(entity);
-            break;
-            default:
-            return;
         }
+        // switch (clazz.toString()) {
+        //     case TaskClass:
+        //     handleTaskEntityFieldMap(entity);
+        //     break;
+        //     case VariableClass:
+        //     handleVariableInstanceEntityFieldMap(entity);
+        //     break;
+        //     case ExecutionClass:
+        //     handleExecutionEntityFieldMap(entity);
+        //     break;
+        //     case ProcessDefinitionClass:
+        //     handleProcessDefinitionEntityFieldMap(entity);
+        //     break;
+        //     case DeploymentClass:
+        //     handleDeploymentEntityFieldMap(entity);
+        //     break;
+        //     case ResourceClass:
+        //     handleResourceEntityFieldMap(entity);
+        //     break;
+        //     case EventClass:
+        //     handleEventSubSrcEntityFieldMap(entity);
+        //     break;
+        //     default:
+        //     return;
+        // }
     }
 
     public static void handleTaskEntitiesFieldMap(Collection<Entity> entities) {
@@ -496,7 +563,13 @@ public  class useRedis {
     public static void handleExecutionEntityFieldMap(Entity entity) {
         ExecutionEntity executionEntity=(ExecutionEntity)entity;
         if (executionEntity.getProcessInstanceId()!=null) {
+            //System.out.println("15");
             entityFieldMap.setEntityFieldMap(entityFieldMap.EXECUTION,entityFieldMap.Field_ProcessInstanceId,executionEntity.getProcessInstanceId(),executionEntity.getId());
+            if (executionEntity.getActivityId()!=null) {
+                entityFieldMap.setEntityFieldMap(entityFieldMap.EXECUTION,entityFieldMap.compositeKey_ActivityId_ProInstId_IsActive,
+                entityFieldMap.compositeKey(executionEntity.getActivityId(),executionEntity.getProcessInstanceId(),String.valueOf(executionEntity.isActive())),
+                executionEntity.getId());
+            }
         }
         if (executionEntity.getName()!=null) {
             entityFieldMap.setEntityFieldMap(entityFieldMap.EXECUTION,entityFieldMap.Field_Name,executionEntity.getName(),executionEntity.getId());
@@ -515,6 +588,11 @@ public  class useRedis {
             ExecutionEntity executionEntity=(ExecutionEntity)entity;
             if (executionEntity.getProcessInstanceId()!=null) {
                 entityFieldMap.removeEntityFieldMap(entityFieldMap.EXECUTION,entityFieldMap.Field_ProcessInstanceId,executionEntity.getProcessInstanceId(),executionEntity.getId());
+                if (executionEntity.getActivityId()!=null) {
+                    entityFieldMap.removeEntityFieldMap(entityFieldMap.EXECUTION,entityFieldMap.compositeKey_ActivityId_ProInstId_IsActive,
+                    entityFieldMap.compositeKey(executionEntity.getActivityId(),executionEntity.getProcessInstanceId(),String.valueOf(executionEntity.isActive())),
+                    executionEntity.getId());
+                }
             }
             if (executionEntity.getName()!=null) {
                 entityFieldMap.removeEntityFieldMap(entityFieldMap.EXECUTION,entityFieldMap.Field_Name,executionEntity.getName(),executionEntity.getId());
@@ -609,24 +687,39 @@ public  class useRedis {
         // if (eventSubscriptionEntity.getEventName()!=null) {
         //     entityFieldMap.setEntityFieldMap(entityFieldMap.EVENT,entityFieldMap.Field_EventName,eventSubscriptionEntity.getEventName(),eventSubscriptionEntity.getId());
         // }
-        if (eventSubscriptionEntity.getExecutionId()!=null) {
-            oidEvents.addOidEventMap(eventSubscriptionEntity.getOid(), eventSubscriptionEntity.getEventName(), eventSubscriptionEntity.getExecutionId());
-            entityFieldMap.setEntityFieldMap(entityFieldMap.EVENT, entityFieldMap.compositeKey_EventType_EventName_ExecutionId,
-            entityFieldMap.compositeKey(eventSubscriptionEntity.getEventType(),eventSubscriptionEntity.getEventName(),eventSubscriptionEntity.getExecutionId()),
-            eventSubscriptionEntity.getId());
+        if (eventSubscriptionEntity.getEventType().equals("message")) {
+            //System.out.println("16");
+            if (eventSubscriptionEntity.getExecutionId()!=null) {
+                oidEvents.addOidEventMap(eventSubscriptionEntity.getOid(), eventSubscriptionEntity.getEventName(), eventSubscriptionEntity.getExecutionId());
+                entityFieldMap.setEntityFieldMap(entityFieldMap.EVENT, entityFieldMap.compositeKey_EventType_EventName_ExecutionId,
+                entityFieldMap.compositeKey(eventSubscriptionEntity.getEventType(),eventSubscriptionEntity.getEventName(),eventSubscriptionEntity.getExecutionId()),
+                eventSubscriptionEntity.getId());
+                entityFieldMap.setEntityFieldMap(entityFieldMap.EVENT,entityFieldMap.Field_ExecutionId,eventSubscriptionEntity.getExecutionId(),eventSubscriptionEntity.getId());
+            }
+        }
+        if (eventSubscriptionEntity.getEventType().equals("compensate")) {
             entityFieldMap.setEntityFieldMap(entityFieldMap.EVENT,entityFieldMap.Field_ExecutionId,eventSubscriptionEntity.getExecutionId(),eventSubscriptionEntity.getId());
+            entityFieldMap.setEntityFieldMap(entityFieldMap.EVENT, entityFieldMap.compositeKey_EventType_ProInstId_ActivityId, entityFieldMap.compositeKey(eventSubscriptionEntity.getEventType(),
+            eventSubscriptionEntity.getProcessInstanceId(),eventSubscriptionEntity.getActivityId()), eventSubscriptionEntity.getId());
         }
     }
 
     public static void removeEventSubSrcEntitiesFieldMap(Collection<Entity> entities) {
         for (Entity entity:entities) {
             EventSubscriptionEntity eventSubscriptionEntity=(EventSubscriptionEntity)entity;
-            if (eventSubscriptionEntity.getExecutionId()!=null) {
-                oidEvents.deleteOidEventMap(eventSubscriptionEntity.getOid(), eventSubscriptionEntity.getEventName(), eventSubscriptionEntity.getExecutionId());
-                entityFieldMap.removeEntityFieldMap(entityFieldMap.EVENT, entityFieldMap.compositeKey_EventType_EventName_ExecutionId,
-                                entityFieldMap.compositeKey(eventSubscriptionEntity.getEventType(),eventSubscriptionEntity.getEventName(),eventSubscriptionEntity.getExecutionId()),
-                                eventSubscriptionEntity.getId());
+            if (eventSubscriptionEntity.getEventType().equals("message")) {
+                if (eventSubscriptionEntity.getExecutionId()!=null) {
+                    oidEvents.deleteOidEventMap(eventSubscriptionEntity.getOid(), eventSubscriptionEntity.getEventName(), eventSubscriptionEntity.getExecutionId());
+                    entityFieldMap.removeEntityFieldMap(entityFieldMap.EVENT, entityFieldMap.compositeKey_EventType_EventName_ExecutionId,
+                                    entityFieldMap.compositeKey(eventSubscriptionEntity.getEventType(),eventSubscriptionEntity.getEventName(),eventSubscriptionEntity.getExecutionId()),
+                                    eventSubscriptionEntity.getId());
+                    entityFieldMap.removeEntityFieldMap(entityFieldMap.EVENT,entityFieldMap.Field_ExecutionId,eventSubscriptionEntity.getExecutionId(),eventSubscriptionEntity.getId());
+                }
+            }
+            if (eventSubscriptionEntity.getEventType().equals("compensate")) {
                 entityFieldMap.removeEntityFieldMap(entityFieldMap.EVENT,entityFieldMap.Field_ExecutionId,eventSubscriptionEntity.getExecutionId(),eventSubscriptionEntity.getId());
+                entityFieldMap.removeEntityFieldMap(entityFieldMap.EVENT, entityFieldMap.compositeKey_EventType_ProInstId_ActivityId, entityFieldMap.compositeKey(eventSubscriptionEntity.getEventType(),
+                eventSubscriptionEntity.getProcessInstanceId(),eventSubscriptionEntity.getActivityId()), eventSubscriptionEntity.getId());
             }
         }
     }
@@ -636,6 +729,16 @@ public  class useRedis {
         List<Object> eventSubScriptionList=new LinkedList<>();
         Set<String> res=entityFieldMap.getEntityIdByFieldValue(entityFieldMap.EVENT, entityFieldMap.compositeKey_EventType_EventName_ExecutionId, 
                                                     entityFieldMap.compositeKey(eventType,eventName,executionId));
+        for (String id:res) {
+            eventSubScriptionList.add(findByIdInRedis(EventClass,id));
+        }
+        return eventSubScriptionList;
+    }
+
+    public static List<Object> findEventSubScriptionEntityByProcessInstanceTypeAndActivity(String eventType,String processInstanceId,String activityId) {
+        List<Object> eventSubScriptionList=new LinkedList<>();
+        Set<String> res=entityFieldMap.getEntityIdByFieldValue(entityFieldMap.EVENT, entityFieldMap.compositeKey_EventType_ProInstId_ActivityId,
+                                                    entityFieldMap.compositeKey(eventType,processInstanceId,activityId));
         for (String id:res) {
             eventSubScriptionList.add(findByIdInRedis(EventClass,id));
         }
@@ -657,6 +760,17 @@ public  class useRedis {
             return findByIdInRedis(ExecutionClass, id);
         }
         return null;
+    }
+
+
+    public static List<Object> findInactiveExecutionsInActivityAndProcessInstance(String activityId,String processInstanceId) {
+        String fieldValue=entityFieldMap.compositeKey(activityId,processInstanceId,String.valueOf(false));
+        List<Object> executionList=new LinkedList<>();
+        Set<String> executionId=entityFieldMap.getEntityIdByFieldValue(entityFieldMap.EXECUTION,entityFieldMap.compositeKey_ActivityId_ProInstId_IsActive,fieldValue);
+        for (String id:executionId) {
+            executionList.add(findByIdInRedis(ExecutionClass,id));
+        }
+        return executionList;
     }
 
     public static List<Object> findchildExecutionEntitiesByProcessInstanceId(String processInstanceId) {

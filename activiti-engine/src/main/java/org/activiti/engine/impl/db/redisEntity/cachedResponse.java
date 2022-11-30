@@ -17,14 +17,21 @@ public class cachedResponse {
     private Map<String,String> toTasks=new HashMap<>();//本来是set,但是fastjson在多层上的性能有待考证，所有toTaskName采用string,用“,”间隔
     //private String businessData;//弃用，原因是业务数据流可以在上层进行处理，服务任务也是上层进行调用。
     private boolean isDeploy;
+    private boolean isEnd;
     private String deploymentName;
     private String businessData;
     
     public cachedResponse() {
-        this.deploymentName="...";
-        this.businessData="...";
     }
     
+    public boolean isEnd() {
+        return isEnd;
+    }
+
+    public void setEnd(boolean isEnd) {
+        this.isEnd = isEnd;
+    }
+
     public String getBusinessData() {
         return businessData;
     }

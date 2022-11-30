@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.activiti.engine.ActivitiEngineAgenda;
 import org.activiti.engine.ActivitiException;
@@ -28,6 +30,7 @@ import org.activiti.engine.delegate.event.ActivitiEventDispatcher;
 import org.activiti.engine.impl.asyncexecutor.JobManager;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.db.DbSqlSession;
+import org.activiti.engine.impl.db.redis.tools.simpleJson.simpleJsonParser;
 import org.activiti.engine.impl.history.HistoryManager;
 import org.activiti.engine.impl.jobexecutor.FailedJobCommandFactory;
 import org.activiti.engine.impl.persistence.cache.EntityCache;
@@ -85,10 +88,59 @@ public class CommandContext {
     public final String Instance="instance";
     public final String Complete="complete";
     private String Oid;
+    private Map<String,Object> cachedOutput=new HashMap<>();
+    private String lastResponse;
+    //private List<String> serviceResponses=new LinkedList<>();
     private String businessData;
     private boolean isDeploy=false;
+    private Stack<Boolean> isExecuteServiceTask=new Stack<>();
+    private int monitorNumber;
+    private int monitorAmount;
+    
 
+    public void setMonitorNumber(int monitorNo) {
+        this.monitorNumber=monitorNo;
+    }
+    
+    public int getMonitorNumber() {
+        monitorNumber=(monitorNumber+1)%monitorAmount;
+        return monitorNumber;
+    }
 
+    public void setMonitorAmount(int monitorAmount) {
+        this.monitorAmount=monitorAmount;
+    }
+
+    public String getLastResponse() {
+        return lastResponse;
+    }
+
+    public void setLastResponse(String lastResponse) {
+        this.lastResponse = lastResponse;
+    }
+
+    public void storeOutput(String taskName,Object output) {
+        cachedOutput.put(taskName,output);
+    }
+
+    public Map<String,Object> getCachedOutput() {
+        return cachedOutput;
+    }
+
+    public void setIsExecuteServiceTask(boolean is) {
+        if (isExecuteServiceTask.isEmpty()) {
+            //如果有了就不写入，使用第一个随机值
+            isExecuteServiceTask.push(is);
+        }
+    }
+
+    public boolean needJudgeExecuteForST() {
+        return isExecuteServiceTask.isEmpty();
+    }
+
+    public boolean isExecuteServiceTask() {
+        return isExecuteServiceTask.peek();
+    }
 
 
     public String getBusinessData() {
@@ -100,6 +152,7 @@ public class CommandContext {
 
     public void setBusinessData(String businessData) {
         this.businessData = businessData;
+        storeOutput("init", simpleJsonParser.parse(businessData));
     }
 
 
@@ -147,6 +200,7 @@ public class CommandContext {
 
     public void setOid(String Oid) {
         this.Oid=Oid;
+        this.cachedOutput.put("oid",Oid);
     }
 
     public String getOid() {

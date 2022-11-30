@@ -86,8 +86,11 @@ public class cachedFlushObjects {
             deletedList.add(cachedDelete.remove(Oid));
         }
         useRedis.insertListToRedis(insertedList);
+        //System.out.println("1");
         useRedis.updateToRedis(updatedObjects);
+        //System.out.println("2");
         useRedis.deleteListToRedis(deletedList);
+        //System.out.println("3");
 
         return "success";
     }

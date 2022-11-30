@@ -30,6 +30,7 @@
   <resultMap id="eventSubscriptionResultMap" type="org.activiti.engine.impl.persistence.entity.EventSubscriptionEntityImpl">
     <id property="id" column="ID_" jdbcType="VARCHAR" />
     <result property="revision" column="REV_" jdbcType="INTEGER" />
+    <!-- <result property="oid" column="OID_" jdbcType="VARCHAR"/> -->
     <result property="eventType" column="EVENT_TYPE_" jdbcType="VARCHAR" />
     <result property="eventName" column="EVENT_NAME_" jdbcType="VARCHAR" />
     <result property="executionId" column="EXECUTION_ID_" jdbcType="VARCHAR" />
@@ -236,6 +237,7 @@
  	insert into ${prefix}ACT_RU_EVENT_SUBSCR (
             ID_, 
             REV_,
+            <!-- OID_, -->
             EVENT_TYPE_,
            	EVENT_NAME_,
            	EXECUTION_ID_,
@@ -249,6 +251,7 @@
     values (#{id, jdbcType=VARCHAR},
             1,
             'message',
+            <!-- #{oid, jdbcType=VARCHAR}, -->
             #{eventName, jdbcType=VARCHAR},
             #{executionId, jdbcType=VARCHAR},
             #{processInstanceId, jdbcType=VARCHAR},
@@ -264,6 +267,7 @@
   insert into ${prefix}ACT_RU_EVENT_SUBSCR (
             ID_, 
             REV_,
+            <!-- OID_, -->
             EVENT_TYPE_,
             EVENT_NAME_,
             EXECUTION_ID_,
@@ -278,6 +282,7 @@
       <foreach collection="list" item="messageEventSubscription" index="index" separator=",">
           (#{messageEventSubscription.id, jdbcType=VARCHAR},
            1,
+           <!-- #{messageEventSubscription.oid, jdbcType=VARCHAR}, -->
            #{messageEventSubscription.eventType, jdbcType=VARCHAR},
            #{messageEventSubscription.eventName, jdbcType=VARCHAR},
            #{messageEventSubscription.executionId, jdbcType=VARCHAR},
@@ -327,6 +332,7 @@
     update ${prefix}ACT_RU_EVENT_SUBSCR
     <set>
        REV_ =  #{revisionNext, jdbcType=INTEGER},
+       <!-- OID_ = #{oid, jdbcType=VARCHAR}, -->
        EVENT_NAME_ = #{eventName, jdbcType=INTEGER},
        EXECUTION_ID_ = #{executionId, jdbcType=INTEGER},
        PROC_INST_ID_ = #{processInstanceId, jdbcType=INTEGER},
@@ -346,6 +352,7 @@
    insert into ${prefix}ACT_RU_EVENT_SUBSCR (
              ID_, 
             REV_,
+            <!-- OID_, -->
             EVENT_TYPE_,
            	EVENT_NAME_,
            	EXECUTION_ID_,
@@ -358,6 +365,7 @@
     )
     values (#{id, jdbcType=VARCHAR},
             1,
+            <!-- #{oid, jdbcType=VARCHAR}, -->
             'signal',
             #{eventName, jdbcType=VARCHAR},
             #{executionId, jdbcType=VARCHAR},
@@ -374,6 +382,7 @@
    insert into ${prefix}ACT_RU_EVENT_SUBSCR (
             ID_, 
             REV_,
+            <!-- OID_, -->
             EVENT_TYPE_,
             EVENT_NAME_,
             EXECUTION_ID_,
@@ -388,6 +397,7 @@
       <foreach collection="list" item="signalEventSubscription" index="index" separator=",">
         (#{signalEventSubscription.id, jdbcType=VARCHAR},
          1,
+         <!-- #{signalEventSubscription.oid, jdbcType=VARCHAR}, -->
          #{signalEventSubscription.eventType, jdbcType=VARCHAR},
          #{signalEventSubscription.eventName, jdbcType=VARCHAR},
          #{signalEventSubscription.executionId, jdbcType=VARCHAR},
@@ -406,6 +416,7 @@
          into ${prefix}ACT_RU_EVENT_SUBSCR (
           ID_, 
           REV_,
+          <!-- OID_, -->
           EVENT_TYPE_,
           EVENT_NAME_,
           EXECUTION_ID_,
@@ -419,6 +430,7 @@
           VALUES 
           (#{signalEventSubscription.id, jdbcType=VARCHAR},
            1,
+           <!-- #{signalEventSubscription.oid, jdbcType=VARCHAR}, -->
            #{signalEventSubscription.eventType, jdbcType=VARCHAR},
            #{signalEventSubscription.eventName, jdbcType=VARCHAR},
            #{signalEventSubscription.executionId, jdbcType=VARCHAR},
@@ -438,6 +450,7 @@
     update ${prefix}ACT_RU_EVENT_SUBSCR
     <set>
        REV_ =  #{revisionNext, jdbcType=INTEGER},
+       <!-- OID_ = #{oid, jdbcType=VARCHAR}, -->
        EVENT_NAME_ = #{eventName, jdbcType=INTEGER},
        EXECUTION_ID_ = #{executionId, jdbcType=INTEGER},
        PROC_INST_ID_ = #{processInstanceId, jdbcType=INTEGER},
@@ -456,6 +469,7 @@
     insert into ${prefix}ACT_RU_EVENT_SUBSCR (
              ID_, 
             REV_,
+            <!-- OID_, -->
             EVENT_TYPE_,
            	EVENT_NAME_,
            	EXECUTION_ID_,
@@ -468,6 +482,7 @@
     )
     values (#{id, jdbcType=VARCHAR},
             1,
+            <!-- #{oid, jdbcType=VARCHAR}, -->
             'compensate',
             #{eventName, jdbcType=VARCHAR},
             #{executionId, jdbcType=VARCHAR},
@@ -484,6 +499,7 @@
     insert into ${prefix}ACT_RU_EVENT_SUBSCR (
             ID_, 
             REV_,
+            <!-- OID_, -->
             EVENT_TYPE_,
             EVENT_NAME_,
             EXECUTION_ID_,
@@ -498,6 +514,7 @@
       <foreach collection="list" item="compensateEventSubscription" index="index" separator=",">
         (#{compensateEventSubscription.id, jdbcType=VARCHAR},
          1,
+         <!-- #{compensateEventSubscription.oid, jdbcType=VARCHAR}, -->
          #{compensateEventSubscription.eventType, jdbcType=VARCHAR},
          #{compensateEventSubscription.eventName, jdbcType=VARCHAR},
          #{compensateEventSubscription.executionId, jdbcType=VARCHAR},
@@ -516,6 +533,7 @@
         into ${prefix}ACT_RU_EVENT_SUBSCR (
           ID_, 
           REV_,
+          <!-- OID_, -->
           EVENT_TYPE_,
           EVENT_NAME_,
           EXECUTION_ID_,
@@ -529,6 +547,7 @@
         VALUES
         (#{compensateEventSubscription.id, jdbcType=VARCHAR},
          1,
+         <!-- #{compensateEventSubscription.oid, jdbcType=VARCHAR}, -->
          #{compensateEventSubscription.eventType, jdbcType=VARCHAR},
          #{compensateEventSubscription.eventName, jdbcType=VARCHAR},
          #{compensateEventSubscription.executionId, jdbcType=VARCHAR},
@@ -548,6 +567,7 @@
     update ${prefix}ACT_RU_EVENT_SUBSCR
     <set>
        REV_ =  #{revisionNext, jdbcType=INTEGER},
+       <!-- OID_ = #{oid, jdbcType=VARCHAR}, -->
        EVENT_NAME_ = #{eventName, jdbcType=INTEGER},
        EXECUTION_ID_ = #{executionId, jdbcType=INTEGER},
        PROC_INST_ID_ = #{processInstanceId, jdbcType=INTEGER},

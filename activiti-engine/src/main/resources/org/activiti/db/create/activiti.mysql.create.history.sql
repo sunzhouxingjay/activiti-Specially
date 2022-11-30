@@ -1,5 +1,6 @@
 create table ACT_HI_PROCINST (
     ID_ varchar(64) not null,
+    --OID_ varchar(64) not null,
     PROC_INST_ID_ varchar(64) not null,
     BUSINESS_KEY_ varchar(255),
     PROC_DEF_ID_ varchar(64) not null,
@@ -38,6 +39,8 @@ create table ACT_HI_ACTINST (
 
 create table ACT_HI_TASKINST (
     ID_ varchar(64) not null,
+    --OID_ varchar(64) not null,
+    --USERID_ varchar(64) not null,
     PROC_DEF_ID_ varchar(64),
     TASK_DEF_KEY_ varchar(255),
     PROC_INST_ID_ varchar(64),

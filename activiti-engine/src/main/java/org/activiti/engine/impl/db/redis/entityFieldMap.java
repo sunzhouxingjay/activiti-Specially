@@ -16,6 +16,7 @@ public class entityFieldMap {
     public final static String DEPLOYMENT="Deployment";
     public final static String RESOURCE="Resource";
     public final static String EVENT="Event";
+    public final static String Field_ActivityId="activityId";
     public final static String Field_ExecutionId="executionId";
     public final static String Field_ProcessInstanceId="processInstanceId";
     public final static String Field_ParentTaskId="parentTaskId";
@@ -30,8 +31,10 @@ public class entityFieldMap {
     public final static String Field_ResourceName="resourceName";
     public final static String Field_EventName="eventName";
     public final static String Field_EventType="eventType";
+    public final static String Field_IsActive="isActive";
     public final static String compositeKey_EventType_EventName_ExecutionId=compositeKey(Field_EventType,Field_EventName,Field_ExecutionId);
-
+    public final static String compositeKey_EventType_ProInstId_ActivityId=compositeKey(Field_EventType,Field_ProcessInstanceId,Field_ActivityId);
+    public final static String compositeKey_ActivityId_ProInstId_IsActive=compositeKey(Field_ActivityId,Field_ProcessInstanceId,Field_IsActive);
     private static volatile Map<String,ConcurrentHashMap<String,Set<String>>> taskFieldMap=new HashMap<>();
     private static volatile Map<String,ConcurrentHashMap<String,Set<String>>> executionFieldMap=new HashMap<>();
     private static volatile Map<String,ConcurrentHashMap<String,Set<String>>> variableFieldMap=new HashMap<>();
@@ -50,6 +53,7 @@ public class entityFieldMap {
         executionFieldMap.put(Field_Name,new ConcurrentHashMap<String,Set<String>>(200000));
         executionFieldMap.put(Field_SuperExec,new ConcurrentHashMap<String,Set<String>>(200000));
         executionFieldMap.put(Field_ParentExecutionId,new ConcurrentHashMap<String,Set<String>>(200000));
+        executionFieldMap.put(compositeKey_ActivityId_ProInstId_IsActive,new ConcurrentHashMap<String,Set<String>>(200000));
         procdefFieldMap.put(Field_DeploymentId,new ConcurrentHashMap<String,Set<String>>(200000));
         deploymentFieldMap.put(Field_Name,new ConcurrentHashMap<String,Set<String>>(200000));
         resourceFieldMap.put(Field_DeploymentId,new ConcurrentHashMap<String,Set<String>>(200000));
@@ -57,6 +61,7 @@ public class entityFieldMap {
         //eventFieldMap.put(Field_EventType,new ConcurrentHashMap<String,Set<String>>(200000));
         eventFieldMap.put(Field_ExecutionId,new ConcurrentHashMap<String,Set<String>>(200000));
         eventFieldMap.put(compositeKey_EventType_EventName_ExecutionId,new ConcurrentHashMap<String,Set<String>>(200000));
+        eventFieldMap.put(compositeKey_EventType_ProInstId_ActivityId,new ConcurrentHashMap<String,Set<String>>(200000));
     }
 
     //组合键

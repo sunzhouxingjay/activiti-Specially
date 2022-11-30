@@ -27,6 +27,10 @@ public class typeTransfer {
     public final static String variable="v";
     public final static String property="pp";
     public final static String event="eve";
+
+    private final static String signalEvent="class org.activiti.engine.impl.persistence.entity.SignalEventSubscriptionEntityImpl";
+    private final static String compensateEvent="class org.activiti.engine.impl.persistence.entity.CompensateEventSubscriptionEntityImpl";
+    private final static String messageEvent="class org.activiti.engine.impl.persistence.entity.MessageEventSubscriptionEntityImpl";
     private final List<String> insertOrder=new ArrayList<String>() {
         {
             add("pp");
@@ -61,6 +65,9 @@ public class typeTransfer {
             put(useRedis.VariableClass,variable);
             put(useRedis.PropertyClass,property);
             put(useRedis.EventClass,event);
+            put(messageEvent,event);
+            put(signalEvent,event);
+            put(compensateEvent,event);
         };
     };
     public static final Map<String,String> getEntityType=new HashMap<String,String>(){
@@ -75,6 +82,8 @@ public class typeTransfer {
             put(event,useRedis.EventClass);
         };
     };
+
+
 
     public static Set<simpleEntity> EntitiesToSimpleEntities(Collection<Entity> entities) {
         Set<simpleEntity> simpleEntities=new HashSet<>();

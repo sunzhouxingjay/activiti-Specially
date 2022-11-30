@@ -29,6 +29,7 @@ import org.activiti.engine.delegate.event.ActivitiEventType;
 import org.activiti.engine.delegate.event.impl.ActivitiEventBuilder;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.db.BulkDeleteable;
+import org.activiti.engine.impl.db.cache.allocationTable;
 import org.activiti.engine.impl.interceptor.CommandContext;
 import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.IdentityLink;
@@ -57,6 +58,9 @@ public class TaskEntityImpl extends VariableScopeImpl implements TaskEntity, Ser
   protected String parentTaskId;
 
   protected String name;
+  //自己加的为了给task设置用户，并与assignes和owner的复杂逻辑脱开
+  //记得要增加字段
+  protected String userId;
   protected transient String localizedName;
   protected String description;
   protected transient String localizedDescription;
@@ -96,6 +100,17 @@ public class TaskEntityImpl extends VariableScopeImpl implements TaskEntity, Ser
   public TaskEntityImpl() {
     this.oid=Context.getCommandContext().getOid();
   }
+
+  
+  public String getUserId() {
+    return userId;
+  }
+
+
+  public void setUserId(String userId) {
+    this.userId = userId;
+  }
+
 
   public String getOid() {
     return oid;
@@ -303,6 +318,11 @@ public class TaskEntityImpl extends VariableScopeImpl implements TaskEntity, Ser
 
   public void setName(String taskName) {
     this.name = taskName;
+    //自己增加的根据taskName与commandcontext中的allocationTable,设置userId
+    String as=allocationTable.getAllocationTable().get(taskName);
+    if (as!=null) {
+      setUserId(as);
+    }
   }
 
   public void setDescription(String description) {

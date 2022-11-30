@@ -1,3 +1,8 @@
+-- 删除oid的索引
+-- drop index WF_IDX_EXEC_OID on ACT_RU_EXECUTION;
+-- drop index WF_IDX_TASK_OID on ACT_RU_TASK;
+-- drop index WF_IDX_EVENT_SUBSCR_OID on ACT_RU_EVENT_SUBSCR;
+
 drop index ACT_IDX_EXEC_BUSKEY on ACT_RU_EXECUTION;
 drop index ACT_IDX_TASK_CREATE on ACT_RU_TASK;
 drop index ACT_IDX_IDENT_LNK_USER on ACT_RU_IDENTITYLINK;

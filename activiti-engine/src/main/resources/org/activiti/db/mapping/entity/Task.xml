@@ -22,10 +22,13 @@
   <!-- TASK INSERT -->
   
   <insert id="insertTask" parameterType="org.activiti.engine.impl.persistence.entity.TaskEntityImpl">
-    insert into ${prefix}ACT_RU_TASK (ID_, REV_, NAME_, PARENT_TASK_ID_, DESCRIPTION_, PRIORITY_, CREATE_TIME_, OWNER_,
+    insert into ${prefix}ACT_RU_TASK (ID_, REV_, 
+    <!-- OID_,  -->
+    NAME_, PARENT_TASK_ID_, DESCRIPTION_, PRIORITY_, CREATE_TIME_, OWNER_,
                       ASSIGNEE_, DELEGATION_, EXECUTION_ID_, PROC_INST_ID_, PROC_DEF_ID_, TASK_DEF_KEY_, DUE_DATE_, CATEGORY_, SUSPENSION_STATE_, TENANT_ID_, FORM_KEY_, CLAIM_TIME_)
     values (#{id, jdbcType=VARCHAR},
             1,
+            <!-- #{oid,jdbcType=VARCHAR}, -->
             #{name, jdbcType=VARCHAR},
             #{parentTaskId, jdbcType=VARCHAR},
             #{description, jdbcType=VARCHAR},
@@ -48,12 +51,15 @@
   </insert>
 
   <insert id="bulkInsertTask" parameterType="java.util.List">
-    INSERT INTO ${prefix}ACT_RU_TASK (ID_, REV_, NAME_, PARENT_TASK_ID_, DESCRIPTION_, PRIORITY_, CREATE_TIME_, OWNER_,
+    INSERT INTO ${prefix}ACT_RU_TASK (ID_, REV_, 
+    <!-- OID_,  -->
+    NAME_, PARENT_TASK_ID_, DESCRIPTION_, PRIORITY_, CREATE_TIME_, OWNER_,
                       ASSIGNEE_, DELEGATION_, EXECUTION_ID_, PROC_INST_ID_, PROC_DEF_ID_, TASK_DEF_KEY_, DUE_DATE_, CATEGORY_, SUSPENSION_STATE_, TENANT_ID_, FORM_KEY_, CLAIM_TIME_)
     VALUES 
       <foreach collection="list" item="task" index="index" separator=","> 
         (#{task.id, jdbcType=VARCHAR},
          1,
+         <!-- #{task.oid, jdbcType=VARCHAR}, -->
          #{task.name, jdbcType=VARCHAR},
          #{task.parentTaskId, jdbcType=VARCHAR},
          #{task.description, jdbcType=VARCHAR},
@@ -111,6 +117,7 @@
     update ${prefix}ACT_RU_TASK
     <set>
       REV_ = #{revisionNext, jdbcType=INTEGER},
+      <!-- OID_= #{oid, jdbcType=VARCHAR}, -->
       NAME_ = #{name, jdbcType=VARCHAR},
       PARENT_TASK_ID_ = #{parentTaskId, jdbcType=VARCHAR},
       PRIORITY_ = #{priority, jdbcType=INTEGER},
@@ -189,6 +196,7 @@
   <resultMap id="taskResultMap" type="org.activiti.engine.impl.persistence.entity.TaskEntityImpl">
     <id property="id" column="ID_" jdbcType="VARCHAR"/>
     <result property="revision" column="REV_" jdbcType="INTEGER"/>
+    <!-- <result property="oid" column="OID_" jdbcType="VARCHAR"/> -->
     <result property="name" column="NAME_" jdbcType="VARCHAR"/>
     <result property="parentTaskId" column="PARENT_TASK_ID_" jdbcType="VARCHAR"/>
     <result property="description" column="DESCRIPTION_" jdbcType="VARCHAR"/>
@@ -212,6 +220,7 @@
   <resultMap id="taskAndVariablesResultMap" type="org.activiti.engine.impl.persistence.entity.TaskEntityImpl">
     <id property="id" column="ID_" jdbcType="VARCHAR"/>
     <result property="revision" column="REV_" jdbcType="INTEGER"/>
+    <!-- <result property="oid" column="OID_" jdbcType="VARCHAR"/> -->
     <result property="name" column="NAME_" jdbcType="VARCHAR"/>
     <result property="parentTaskId" column="PARENT_TASK_ID_" jdbcType="VARCHAR"/>
     <result property="description" column="DESCRIPTION_" jdbcType="VARCHAR"/>

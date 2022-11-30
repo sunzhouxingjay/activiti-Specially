@@ -56,7 +56,7 @@ create table ACT_RU_EXECUTION (
     ID_ varchar(64),
     REV_ integer,
     -- 下面自己加的
-    OID_ varchar(64),
+    -- OID_ varchar(64),
     PROC_INST_ID_ varchar(64),
     BUSINESS_KEY_ varchar(255),
     PARENT_ID_ varchar(64),
@@ -190,7 +190,7 @@ create table ACT_RU_TASK (
     ID_ varchar(64),
     REV_ integer,
     -- 下面自己加的
-    OID_ varchar(64),
+    -- OID_ varchar(64),
     EXECUTION_ID_ varchar(64),
     PROC_INST_ID_ varchar(64),
     PROC_DEF_ID_ varchar(64),
@@ -244,7 +244,7 @@ create table ACT_RU_EVENT_SUBSCR (
     ID_ varchar(64) not null,
     REV_ integer,
     -- 下面自己加的
-    OID_ varchar(64),
+    -- OID_ varchar(64),
     EVENT_TYPE_ varchar(255) not null,
     EVENT_NAME_ varchar(255),
     EXECUTION_ID_ varchar(64),
@@ -291,10 +291,10 @@ create table ACT_RU_INTEGRATION (
     primary key (ID_)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE utf8_bin;
 
--- 加上oid的索引
-create index WF_IDX_EXEC_OID on ACT_RU_EXECUTION(OID_);
-create index WF_IDX_TASK_OID on ACT_RU_TASK(OID_);
-create index WF_IDX_EVENT_SUBSCR_OID on ACT_RU_EVENT_SUBSCR(OID_);
+-- -- 加上oid的索引
+-- create index WF_IDX_EXEC_OID on ACT_RU_EXECUTION(OID_);
+-- create index WF_IDX_TASK_OID on ACT_RU_TASK(OID_);
+-- create index WF_IDX_EVENT_SUBSCR_OID on ACT_RU_EVENT_SUBSCR(OID_);
 
 create index ACT_IDX_EXEC_BUSKEY on ACT_RU_EXECUTION(BUSINESS_KEY_);
 create index ACT_IDX_EXEC_ROOT on ACT_RU_EXECUTION(ROOT_PROC_INST_ID_);

@@ -33,6 +33,8 @@ public class DeleteDeploymentCmd implements Command<Void>, Serializable {
   }
 
   public Void execute(CommandContext commandContext) {
+    //迫于无奈，丑陋的删除方法
+    commandContext.setDeploy(true);
     if (deploymentId == null) {
       throw new ActivitiIllegalArgumentException("deploymentId is null");
     }
